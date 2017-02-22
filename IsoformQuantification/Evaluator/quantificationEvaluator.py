@@ -66,6 +66,10 @@ def getInputDic():
 
 truth_values = []
 input_values = []
+expressed_truth_values = []
+nonexpressed_truth_values = []
+expressed_input_values = []
+nonexpressed_input_values = []
 
 def getBothValues():
     infile = "%s" % inTruthFile
@@ -81,17 +85,36 @@ def getBothValues():
             name=tmp[0]
             value=float(tmp[1][0:len(tmp[1])-1])
             truth_values.append(value)
+            
             if input_values_dic.get(name) is not None:
                 input_values.append(input_values_dic[name])
             else:
                 input_values.append(0)
+            if value >= 1:
+                expressed_truth_values.append(value)
+                if input_values_dic.get(name) is not None:
+                    expressed_input_values.append(input_values_dic[name])
+                else:
+                    expressed_input_values.append(0)
+            else: 
+                nonexpressed_truth_values.append(value)
+                if input_values_dic.get(name) is not None:
+                    nonexpressed_input_values.append(input_values_dic[name])
+                else:
+                    nonexpressed_input_values.append(0)
 
 def calculateCor():
     cor,p_value=stats.spearmanr(truth_values,input_values)
+    exp_spearman,exp_spear_pvalue=stats.spearmanr(expressed_truth_values,expressed_input_values)
     pearson,pearson_pvalue=stats.pearsonr(truth_values,input_values)
+    exp_pearson,exp_pear_pvalue=stats.pearsonr(expressed_truth_values,expressed_input_values)
     log_pearson,log_pearson_pvalue=stats.pearsonr(numpy.log(numpy.add(truth_values,0.01)),numpy.log(numpy.add(input_values,0.01)))
-
-    final = "spearman\tpearson\tlog_pearson\n%s\t%s\t%s" % (cor,pearson,log_pearson) 
+    exp_log,exp_log_pvalue=stats.pearsonr(numpy.log(numpy.add(expressed_truth_values,0.01)),numpy.log(numpy.add(expressed_input_values,0.01)))
+    total_exp=len(expressed_truth_values)
+    total_nonexp=len(nonexpressed_truth_values)
+    fp=format(float(numpy.count_nonzero(nonexpressed_input_values))/len(nonexpressed_input_values),'.3f')
+    
+    final = "isoforms\tspearman\tpearson\tlog_pearson\nAll\t%s\t%s\t%s\nExpressed\t%s\t%s\t%s\n\nTotal Expressed:\t%s\nTotal Not Expressed:\t%s\nFalse Positives:\t%s" % (cor,pearson,log_pearson,exp_spearman,exp_pearson,exp_log,total_exp,total_nonexp,fp) 
 
     print(final)
     return(final)
