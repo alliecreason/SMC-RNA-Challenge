@@ -110,11 +110,19 @@ def calculateCor():
     exp_pearson,exp_pear_pvalue=stats.pearsonr(expressed_truth_values,expressed_input_values)
     log_pearson,log_pearson_pvalue=stats.pearsonr(numpy.log(numpy.add(truth_values,0.01)),numpy.log(numpy.add(input_values,0.01)))
     exp_log,exp_log_pvalue=stats.pearsonr(numpy.log(numpy.add(expressed_truth_values,0.01)),numpy.log(numpy.add(expressed_input_values,0.01)))
+
     total_exp=len(expressed_truth_values)
     total_nonexp=len(nonexpressed_truth_values)
-    fp=format(float(numpy.count_nonzero(nonexpressed_input_values))/len(nonexpressed_input_values),'.3f')
+
+    fp=numpy.count_nonzero(nonexpressed_input_values)
+    tn=len(nonexpressed_truth_values) - fp
+    spec=float(tn)/(tn+fp)
     
-    final = "isoforms\tspearman\tpearson\tlog_pearson\nAll\t%s\t%s\t%s\nExpressed\t%s\t%s\t%s\n\nTotal Expressed:\t%s\nTotal Not Expressed:\t%s\nFalse Positives:\t%s" % (cor,pearson,log_pearson,exp_spearman,exp_pearson,exp_log,total_exp,total_nonexp,fp) 
+    tp=numpy.count_nonzero(expressed_input_values)
+    fn=len(expressed_truth_values) - tp
+    sen=float(tp)/(tp+fn)
+
+    final = "isoforms\tspearman\tpearson\tlog_pearson\nAll\t%s\t%s\t%s\nExpressed\t%s\t%s\t%s\n\nSpecificity:\t%s\nSensitivity:\t%s" % (cor,pearson,log_pearson,exp_spearman,exp_pearson,exp_log,spec,sen) 
 
     print(final)
     return(final)
